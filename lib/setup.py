@@ -3,7 +3,7 @@
 
 import glob
 import os
-
+import numpy as np
 import torch
 from setuptools import find_packages
 from setuptools import setup
@@ -42,7 +42,10 @@ def get_extensions():
     sources = [os.path.join(extensions_dir, s) for s in sources]
 
     include_dirs = [extensions_dir]
-
+    try: 
+        numpy_include = np.get_include() 
+    except AttributeError: 
+        numpy_include = np.get_numpy_include()
     ext_modules = [
         extension(
             "model._C",
@@ -50,7 +53,8 @@ def get_extensions():
             include_dirs=include_dirs,
             define_macros=define_macros,
             extra_compile_args=extra_compile_args,
-        )
+        ),
+extension( "model.utils.cython_bbox", ["model/utils/bbox.pyx"], extra_compile_args={'cxx':[],'gcc': ["-Wno-cpp", "-Wno-unused-function"]}, include_dirs=[numpy_include] )
     ]
 
     return ext_modules
